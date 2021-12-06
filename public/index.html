@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>FXHASH project</title>
-    <meta charset="utf-8">
+    <title>Mainframe Overload</title>
     <script id="fxhash-snippet">
       //---- do not edit the following code (you can indent as you wish)
       let alphabet = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
@@ -28,10 +27,167 @@
     </script>
 
     <link rel="stylesheet" href="./style.css">
+    <script src="./rough.js"></script>
+
+    
 
     <!-- if you need to import js scripts do it here -->
   </head>
   <body>
+
+    <svg id="svg"></svg>
+
+    <svg xmlns="http://www.w3.org/2000/svg" class="svg-filter">
+      <defs>
+        <filter id="noise">
+          <feOffset in="SourceGraphic" dx="-8" dy="-8" result="offset" />
+          <feGaussianBlur in="offset" stdDeviation="64" result="blur" />
+          <feTurbulence result="waves" type="turbulence" baseFrequency="0.735 0.771" numOctaves="1" seed="256"></feTurbulence>
+          <feDisplacementMap in="blur" in2="waves" scale="320" xChannelSelector="R" yChannelSelector="B" result="ripples"></feDisplacementMap>
+          <feComposite in="waves" in2="ripples" operator="arithmetic" k1="1" k2="0" k3="1" k4="0"></feComposite>
+        </filter>
+      </defs>
+    </svg>
+
+    <section class="container">
+
+      <div class="background">
+        <div class="bk-shape bk-noisy"></div>
+        <div class="bk-shape bk-gradient"></div>
+      </div>
+  
+    </section>
+
+    
+
+  <script>
+
+      function map_range(value, low1, high1, low2, high2) {
+          return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+      }
+
+      function getHash(string) {
+        if (string) {
+          let nameHash = string.split("").reduce((a, b) => {
+          a = (a << 5) - a + b.charCodeAt(0);
+          return a & a;
+          }, 0);
+          return Math.abs(nameHash);
+        } else {
+          return null;
+        }
+      }
+
+    function randomFill(){
+      let random = fxrand() * 10;
+      console.log("rand " + Math.round(random));
+      return Math.round(map_range(Math.round(random), 0, 9, 0, 6));
+      //return Math.round(random);
+    }
+
+    let seed = getHash(fxhash);
+    let features = String(seed);
+    let feature1 = features.substring(0,1);
+    let feature2 = features.substring(2,3);
+    let boxes = Math.round(map_range(feature1,0,9,3,20));
+    let random_hash = fxrand();
+
+    console.log("seed " + seed);
+    console.log("seed " + features.substring(0,1));
+    console.log("seed " + features.substring(2,3));
+    console.log("boxes " + boxes);
+    console.log("randomFill " + randomFill());
+
+    
+
+    const svg = document.getElementById('svg');
+    const rc = rough.svg(svg);
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    const xcenter = width/2;
+    const ycenter = height/2;
+
+
+    // draw sine curve
+    // let points = [];
+    // for (let i = 0; i < 20; i++) {
+    //   // 4pi - 400px
+    //   let x = (400 / 20) * i + 10;
+    //   let xdeg = (Math.PI / 100) * x;
+    //   let y = Math.round(Math.sin(xdeg) * 90) + 500;
+    //   points.push([x, y]);
+    // }
+    // svg.appendChild(rc.curve(points, {
+    //   roughness: 1, stroke: 'black', strokeWidth: 1
+    // }));
+
+    // svg.appendChild(rc.rectangle(140, 10, 100, 100, {
+    //   fill: 'rgba(0,0,0,0.5)',
+    //   fillWeight: 3,
+    //   roughness: 2
+    // }));
+
+    // svg.appendChild(rc.circle(480, 250, 180, {
+    //   stroke: 'black', strokeWidth: 2,
+    //   fill: 'black',
+    //   hachureAngle: 60, // angle of hachure,
+    //   hachureGap: 1
+    // }));
+
+    // svg.appendChild(rc.line(xcenter * random_hash, 0 * random_hash, width, height));
+
+    // svg.appendChild(rc.line(0 * random_hash, ycenter * random_hash, width, height));
+
+    // for(let x = 0; x < boxes; x++) {
+    //   let xpos = width/2;
+    //   let ypos = height/2;
+
+    //   svg.appendChild(rc.rectangle(xpos + (-35.5 * x), (height/3) + (29.5 * x), width/3, height/3, {
+    //     fill: 'rgba(255,255,255,0.15)',
+    //     fillWeight: 3,
+    //     roughness: 2,
+    //     stroke: "#000"
+    //   }));
+    // }
+
+    const fill_style = ['hachure', 'solid', 'zigzag', 'dashed', 'zigzag-line', 'cross-hatch'];
+
+    for(let i = 0; i < boxes; i++) {
+      let xpos = width/2;
+      let ypos = height/8;
+      let building_width = map_range(width/2 * fxrand(), 0, 100, 50, 100);
+      let building_height = map_range(height * fxrand(), 0, 1000, 250, 800);
+
+      // Negating the height positions the building at the bottom
+      svg.appendChild(rc.rectangle(i + (xpos * fxrand()) , ypos, building_width , building_height, {
+        fill: 'rgba(0,0,0,0.5)',
+        //fillStyle: 'hachure',
+        //fillStyle: 'solid',
+        //fillStyle: 'zigzag',
+        fillStyle: fill_style[randomFill()],
+         //fillStyle: 'dots',
+        // fillStyle: 'dashed',
+        //fillStyle: 'zigzag-line',
+        hachureAngle: 90,
+        hachureGap: 5,
+        fillWeight: 0.25,
+        roughness: 1,
+        strokeWidth: 0.5,
+        stroke: "#000"
+      }));
+    }
+
+    svg.appendChild(rc.arc(350, 300, 200, 180, Math.PI, Math.PI * 1.6, true));
+
+    svg.appendChild(rc.arc(350, 300, 200, 180, 0, Math.PI / 2, true, {
+      stroke: 'red', strokeWidth: 4,
+      fill: 'rgba(255,255,0,0.4)', fillStyle: 'solid'
+    }));
+
+  </script>
+
+  <!-- <img id="cloud" src="./images/cloud.svg" style="z-index: 100;"> -->
 
     <!-- WEBPACK will inject the bundle.js here -->
   </body>
